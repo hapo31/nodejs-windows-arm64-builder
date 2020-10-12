@@ -18,12 +18,15 @@ jobs:
       release_result: ${{ steps.check_release.outputs.tag }}
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-go@v2
         with:
           go-version: 'go1.12.6'
+
       - name: Check releases
-      - run: echo "::set-output name=tag::go run check_release.go hapo31/nodejs-windows-arm64-builder nodejs/node"
+        run: echo "::set-output name=tag::go run check_release.go hapo31/nodejs-windows-arm64-builder nodejs/node"
         id: check_release
+
   build:
     if: steps.check_release.outputs.tag != ''
     runs-on: windows-latest
@@ -34,8 +37,9 @@ jobs:
           ref: ${{ needs.check_releases.outputs.tag }}
           repository: nodejs/node
           path: node
+
       - uses: warrenbuckley/Setup-MSBuild 
-      
+
       - name: Build nodejs from latest release
         run: |
           cd node
