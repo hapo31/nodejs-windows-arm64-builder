@@ -1,0 +1,52 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the main branch
+on:
+  schedule:
+    - cron: "* 0 * * *"
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  check_releases:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+    outputs:
+      release_result: ${{ steps.check_release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 'go1.12.6'
+      - name: Check releases
+      - run: echo "::set-output name=tag::go run check_release.go hapo31/nodejs-windows-arm64-builder nodejs/node"
+        id: check_release
+  build:
+    if: steps.check_release.outputs.tag != ''
+    runs-on: windows-latest
+    needs: check_releases
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ needs.check_releases.outputs.tag }}
+          repository: nodejs/node
+          path: node
+      - name: Build nodejs from latest release
+        run: |
+          cd node
+          ./vcbuild arm64
+          
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.check_releases.outputs.tag }}
+          release_name: ${{ steps.check_releases.outputs.tag }} - Windows arm64
+          body: build from https://github.com/nodejs/node/releases/${{ steps.check_releases.outputs.tag }}
+          draft: false
+          prerelease: false
+        
