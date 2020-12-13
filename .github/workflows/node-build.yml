@@ -14,8 +14,6 @@ jobs:
   check_releases:
     # The type of runner that the job will run on
     runs-on: windows-latest
-    outputs:
-      release_result: ${{ steps.check_release.outputs.tag }}
     steps:
       - uses: actions/checkout@v2
 
@@ -24,16 +22,20 @@ jobs:
           go-version: 1.13
 
       - name: Check releases
-        run: echo "::set-output name=tag::go run check_release.go hapo31/nodejs-windows-arm64-builder nodejs/node"
+        run: |
+          $ver = go run check_release.go hapo31/nodejs-windows-arm64-builder nodejs/node
+          echo "::set-output name=tag::$ver"
         id: check_release
       
       - name: debug
         run: |
           echo ${{steps.check_release.outputs.tag}}
           echo ${{startswith(steps.check_release.outputs.tag, 'v')}}
+    outputs:
+      tag: ${{ steps.check_release.outputs.tag }}
 
   build:
-    if: ${{startswith(needs.check_release.outputs.tag, 'v')}}
+    if: startswith(needs.check_releases.outputs.tag, 'v')
     runs-on: windows-latest
     needs: check_releases
     steps:
@@ -44,6 +46,8 @@ jobs:
           path: node
 
       - uses: warrenbuckley/Setup-MSBuild@v1
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
       - name: Build nodejs from latest release
         run: |
@@ -55,9 +59,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.check_releases.outputs.tag }}
-          release_name: ${{ steps.check_releases.outputs.tag }} - Windows arm64
-          body: build from https://github.com/nodejs/node/releases/${{ steps.check_releases.outputs.tag }}
+          tag_name: ${{ needs.check_releases.outputs.tag }}
+          release_name: ${{ needs.check_releases.outputs.tag }} - Windows arm64
+          body: build from https://github.com/nodejs/node/releases/${{ needs.check_releases.outputs.tag }}
           draft: false
           prerelease: false
         
