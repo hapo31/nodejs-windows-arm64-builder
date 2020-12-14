@@ -6,7 +6,7 @@ name: CI
 # events but only for the main branch
 on:
   schedule:
-    - cron: "* 0 * * *"
+    - cron: "* 15 * * 1"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -66,7 +66,7 @@ jobs:
           body: build from https://github.com/nodejs/node/releases/${{ needs.check_releases.outputs.tag }}
           draft: false
           prerelease: false
-          
+
       - name: Upload Release Asset
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
