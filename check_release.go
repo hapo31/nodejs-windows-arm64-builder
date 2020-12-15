@@ -10,7 +10,7 @@ import (
 )
 
 type Release struct {
-	Name				string	`json:"tag_name"`
+	Name				string	`json:"name"`
 	Published		string	`json:"published_at"`
 }
 
