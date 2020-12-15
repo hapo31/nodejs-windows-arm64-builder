@@ -7,7 +7,7 @@ name: CI
 on:
   workflow_dispatch:
   schedule:
-    - cron: "* 15 * * 1"
+    - cron: "* 15 * * 2"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -26,12 +26,7 @@ jobs:
         run: |
           $ver = go run check_release.go hapo31/nodejs-windows-arm64-builder nodejs/node
           echo "::set-output name=tag::$ver"
-        id: check_release
-      
-      - name: debug
-        run: |
-          echo ${{steps.check_release.outputs.tag}}
-          echo ${{startswith(steps.check_release.outputs.tag, 'v')}}
+        id: check_release 
     outputs:
       tag: ${{ steps.check_release.outputs.tag }}
 
