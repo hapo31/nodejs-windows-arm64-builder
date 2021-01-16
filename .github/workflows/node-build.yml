@@ -41,7 +41,7 @@ jobs:
           repository: nodejs/node
           path: node
 
-      - uses: warrenbuckley/Setup-MSBuild@v1
+      - uses: microsoft/setup-msbuild@v1.0.2
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
@@ -73,3 +73,4 @@ jobs:
           asset_path: ./node.exe.zip
           asset_name: node-${{ needs.check_releases.outputs.tag }}-windows-aarch64.zip
           asset_content_type: application/zip
+          
